@@ -1,10 +1,6 @@
 const express = require('express')
 const app = express()
-
-app.use(express.json())
-
 const cors = require('cors')
-app.use(cors())
 
 const requestLogger = (request, response, next) => {
   console.log('Method:', request.method)
@@ -14,7 +10,15 @@ const requestLogger = (request, response, next) => {
   next()
 }
 
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: 'unknown endpoint' })
+}
+
+app.use(cors())
+app.use(express.json())
 app.use(requestLogger)
+app.use(express.static('build'))
+app.use(express.static('dist'))
 
 let notes = [
   {
@@ -33,6 +37,15 @@ let notes = [
     important: true
   }
 ]
+
+
+app.get('/', (req, res) => {
+  res.send('<h1>Hello World!</h1>')
+})
+
+app.get('/api/notes', (req, res) => {
+  res.json(notes)
+})
 
 const generateId = () => {
   const maxId = notes.length > 0
@@ -53,6 +66,7 @@ app.post('/api/notes', (request, response) => {
   const note = {
     content: body.content,
     important: body.important || false,
+    date: new Date(),
     id: generateId(),
   }
 
@@ -61,24 +75,17 @@ app.post('/api/notes', (request, response) => {
   response.json(note)
 })
 
-app.get('/', (req, res) => {
-  res.send('<h1>Hello World!</h1>')
-})
-
-app.get('/api/notes', (req, res) => {
-  res.json(notes)
-})
-
 app.get('/api/notes/:id', (request, response) => {
   const id = Number(request.params.id)
   const note = notes.find(note => note.id === id)
-  
 
   if (note) {
     response.json(note)
   } else {
     response.status(404).end()
   }
+
+  response.json(note)
 })
 
 app.delete('/api/notes/:id', (request, response) => {
@@ -87,10 +94,6 @@ app.delete('/api/notes/:id', (request, response) => {
 
   response.status(204).end()
 })
-
-const unknownEndpoint = (request, response) => {
-  response.status(404).send({ error: 'unknown endpoint' })
-}
 
 app.use(unknownEndpoint)
 
