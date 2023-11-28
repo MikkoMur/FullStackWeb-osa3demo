@@ -1,0 +1,15 @@
+POST http://localhost:3001/api/notes
+content-type: application/json
+
+{
+    "content": "ohno",
+    "important": true
+}
+
+###
+
+DELETE http://localhost:3001/api/notes/4
+
+###
+
+GET http://localhost:3001/api/notes
